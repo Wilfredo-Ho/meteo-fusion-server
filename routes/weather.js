@@ -18,8 +18,7 @@ charset(superagent);
 
 //需要遍历的信息
 var BaseUrl = "http://tianqi.eastday.com";
-var Cities = ["成都"]; //需要获取的城市
-var indexArr = ['cd'];
+var Cities = ["哈尔滨", "天津", "重庆", "乌鲁木齐", "海口", "上海"]; //需要获取的城市
 var Years = ["2018"]; //年份，因为2018年以前dom结构不一样，所以这里只取2018
 var Months = ["01", "02", "03", "04", "05", "06", "07", "08"]; //月份
 
@@ -42,7 +41,7 @@ function getCityUrl (city) {
 }
 
 //获取指定城市在指定时间的数据
-function getData (href, city) {
+function getData (href) {
   let year = Years[0];
   return  Months.map(month => {
       let url = BaseUrl + href.replace(".html", "_" + year + month + '.html' );
@@ -121,26 +120,26 @@ function query (sql) {
 }
 
 function makeSql (item, index) {
-  //["西青", "哈尔滨", "重庆", "海口", "乌鲁木齐"]
-
-  let sql = "INSERT INTO weather_" + indexArr[index] + " (time, wea, tempH, tempL, wind) values ";
+  let sql = "INSERT INTO weather (time, wea, tempH, tempL, wind, cid) values ";
   let arr = [].concat.apply([], item);
-  arr.map(group => {
+  arr.map((group) => {
     sql += "('"
       + group.time + "', '"
       + group.wea + "', '"
       + group.tempH + "', '"
       + group.tempL + "', '"
-      + group.wind
-      + "'),";
+      + group.wind + "', "
+      + (index + 1)
+      + "),";
   });
+
+  console.log(sql.substring(0, sql.length-1));
   
   return sql.substring(0, sql.length-1);
 } 
 
 router.get('/', function(req, res, next) {
-  let promiseArr = [];
-  promiseArr = Cities.map(city => {
+    let promiseArr = Cities.map(city => {
       //遍历城市
       return getCityUrl(city);
   });

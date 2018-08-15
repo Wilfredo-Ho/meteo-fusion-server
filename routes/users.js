@@ -124,7 +124,7 @@ router.post("/delete", (req, res, next) => {
   });
 });
 
-//登陆
+//登录
 router.post("/login", (req, res, next) => {
   var params = req.body;
   pool.getConnection((errs, conn) => {
@@ -133,13 +133,17 @@ router.post("/login", (req, res, next) => {
       return;
     }
     //判断用户是否存在
-    conn.query(userSQL.login, [params.name, params.pwd], (err, result) => {
+    conn.query(userSQL.login, [params.userName, params.password], (err, result) => {
       if (err) {
         responseJson(res, err.message, '1');
       } else {
         if (result.length == 0) {
-          responseJson(res, "用户不存在", '1');
+          responseJson(res, "用户名或密码错误", '1');
         } else {
+          res.cookie('userId', result[0].id, {
+            maxAge: 1000 * 60 * 60,
+            path: '/'
+          });
           responseJson(res, 'success', '0');
         }
         conn.release();
@@ -164,12 +168,25 @@ router.get("/check", (req, res, next) => {
         if (result.length == 0) {
           responseJson(res, "用户不存在", '1');
         } else {
-          responseJson(res, 'success', '0');
+          responseJson(res, result[0].name, '0');
         }
         conn.release();
       }
     });
   });
+});
+
+//登出
+router.get("/logout", (req, res, next) => {
+  res.cookie("userId", "", {
+    maxAge: -1,
+      path: '/'
+  });
+  res.json({
+      status: '0',
+      msg: '',
+      result:''
+  })
 });
 
 module.exports = router;
