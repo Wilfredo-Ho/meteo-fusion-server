@@ -138,9 +138,9 @@ router.post("/login", (req, res, next) => {
         responseJson(res, err.message, '1');
       } else {
         if (result.length == 0) {
-          responseJson(res, "用户名或密码错误", '1');
+          responseJson(res, "用户名或密码不正确", '1');
         } else {
-          res.cookie('userId', result[0].uid, {
+          res.cookie("userId", result[0].uid, {
             maxAge: 1000 * 60 * 60,
             path: '/'
           });
@@ -168,7 +168,7 @@ router.get("/check", (req, res, next) => {
         if (result.length == 0) {
           responseJson(res, "用户不存在", '1');
         } else {
-          responseJson(res, result[0].name, '0');
+          responseJson(res, result[0].nickname, '0');
         }
         conn.release();
       }
