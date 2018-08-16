@@ -180,4 +180,11 @@ router.get('/', function(req, res, next) {
       });
 });
 
+router.get("/today", (req, res, next) => {
+    res.json({
+        status: '1',
+        msg: 'API开发中'
+    })
+});
+
 module.exports = router;
