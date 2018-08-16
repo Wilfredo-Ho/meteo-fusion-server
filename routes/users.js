@@ -140,7 +140,7 @@ router.post("/login", (req, res, next) => {
         if (result.length == 0) {
           responseJson(res, "用户名或密码错误", '1');
         } else {
-          res.cookie('userId', result[0].id, {
+          res.cookie('userId', result[0].uid, {
             maxAge: 1000 * 60 * 60,
             path: '/'
           });
