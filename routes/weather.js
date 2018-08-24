@@ -10,6 +10,7 @@ var responseJson = require("../util/responseJson");
 
 //导入mysql模块
 var dbConfig = require("../db/DBconfig");
+var weathersql = require("../db/weathersql");
 
 //使用DBConfig.js的配置信息创建一个MySQL连接池
 var pool = mysql.createPool(dbConfig.mysql);
@@ -34,7 +35,7 @@ function getCityUrl (city) {
               }
               let $ = cheerio.load(sres.text);
               //后续继续遍历的基址
-              let href = $(".letter-box").find("a[title='" + city + "']").attr("href");
+              let href = $("#city_class").find("a:contains("+ city+ ")").eq(0).attr("href");
               resolve(href);
           });
   })
@@ -97,13 +98,13 @@ function dispatch(groups) {
   }())
 } 
 
-function query (sql) {
+function query (sql, values) {
   return new Promise((resolve, reject) => {
     pool.getConnection((err, conn) => {
       if(err){
         reject(err);
       } else {
-        conn.query(sql, (err1, rows, fields) => {
+        conn.query(sql, values || null, (err1, rows, fields) => {
           conn.release();
           if(err1){
             reject(err1);
@@ -133,12 +134,10 @@ function makeSql (item, index) {
       + "),";
   });
 
-  console.log(sql.substring(0, sql.length-1));
-  
   return sql.substring(0, sql.length-1);
 } 
 
-router.get('/', function(req, res, next) {
+router.get('/insertDB', function(req, res, next) {
     let promiseArr = Cities.map(city => {
       //遍历城市
       return getCityUrl(city);
@@ -180,11 +179,28 @@ router.get('/', function(req, res, next) {
       });
 });
 
-router.get("/today", (req, res, next) => {
-    res.json({
-        status: '1',
-        msg: 'API开发中'
-    })
+router.get("/month", (req, res, next) => {
+    query(weathersql.getMonth)
+        .then((rows, fields) => {
+            responseJson(res, rows.rows, '0');
+        })
+        .catch(e => {
+            responseJson(res,  e.message, '1');
+        })
+});
+
+router.get("/day", (req, res, next) => {
+    let start = req.query.month;
+    let end = start.split("-")[0] + "-" + (Number(start.split("-")[1]) + 1);
+    let cid = req.query.cid;
+
+    query(weathersql.getDay, [cid, start, end])
+       .then((rows, fields) => {
+                responseJson(res, rows.rows, '0');
+        })
+        .catch(e => {
+            responseJson(res,  e.message, '1');
+        })
 });
 
 module.exports = router;
